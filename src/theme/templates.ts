@@ -1,6 +1,14 @@
-import { IndexedNote, VaultIndex } from "./vault-index";
-import { Renderer, RenderResult, TocEntry } from "./renderer";
-import { slugify } from "./slug";
+import { IndexedNote, VaultIndex } from "../vault-index";
+import { Renderer, RenderResult, TocEntry } from "../renderer";
+import { slugify } from "../slug";
+import {
+	ICON_GRAPH,
+	ICON_HASH,
+	ICON_HOME,
+	ICON_LINK,
+	ICON_SEARCH,
+	ICON_TAGS,
+} from "./icons";
 
 export interface SiteContext {
 	vaultName: string;
@@ -10,7 +18,7 @@ export interface SiteContext {
 const FONTS_HREF =
 	"https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap";
 
-export function pageShell(opts: {
+interface PageShellOpts {
 	title: string;
 	site: SiteContext;
 	currentPath?: string;
@@ -18,9 +26,10 @@ export function pageShell(opts: {
 	leftNav: string;
 	rightAside: string;
 	main: string;
-	preconnects?: string[];
 	headExtras?: string;
-}): string {
+}
+
+export function pageShell(opts: PageShellOpts): string {
 	const { title, site, bodyClass, leftNav, rightAside, main, headExtras } = opts;
 	const themeClass = `theme-quiet-reference ${bodyClass ?? ""}`.trim();
 	return [
@@ -53,15 +62,16 @@ export function pageShell(opts: {
 export function topBar(site: SiteContext): string {
 	return [
 		`<header class="top">`,
-		`<a class="brand" href="/"><span>${esc(site.vaultName)}</span><span class="dot">.</span></a>`,
+		`<a class="brand" href="/"><span class="brand-name">${esc(site.vaultName)}</span><span class="dot">.</span></a>`,
 		`<form class="search" role="search" action="/search/" method="get">`,
+		`<span class="search-icon" aria-hidden="true">${ICON_SEARCH}</span>`,
 		`<input id="site-search" type="search" name="q" placeholder="Search the wiki" autocomplete="off">`,
 		`<span class="kbd" aria-hidden="true">⌘ K</span>`,
 		`</form>`,
 		`<nav class="top-nav">`,
-		`<a href="/">Index</a>`,
-		`<a href="/tags/">Tags</a>`,
-		`<a href="/graph/">Graph</a>`,
+		`<a href="/" class="top-nav-link"><span class="ico" aria-hidden="true">${ICON_HOME}</span><span>Index</span></a>`,
+		`<a href="/tags/" class="top-nav-link"><span class="ico" aria-hidden="true">${ICON_TAGS}</span><span>Tags</span></a>`,
+		`<a href="/graph/" class="top-nav-link"><span class="ico" aria-hidden="true">${ICON_GRAPH}</span><span>Graph</span></a>`,
 		`</nav>`,
 		`</header>`,
 	].join("");
@@ -81,7 +91,9 @@ export function buildLeftNav(index: VaultIndex, currentPath?: string): string {
 	});
 	const out: string[] = [];
 	for (const folder of orderedFolders) {
-		const notes = groups.get(folder)!.sort((a, b) => a.title.localeCompare(b.title));
+		const notes = groups
+			.get(folder)!
+			.sort((a, b) => a.title.localeCompare(b.title));
 		out.push(`<div class="group">`);
 		const label = folder === "" ? "Untitled" : folder;
 		out.push(`<div class="group-title">${esc(label)}</div>`);
@@ -111,7 +123,7 @@ export function notePage(
 	const result = renderer.render(note, site.index);
 	const left = buildLeftNav(site.index, note.path);
 	const right = buildRightAside(note, result.toc, site.index);
-	const main = noteArticle(note, result, site.index);
+	const main = noteArticle(note, result, site);
 	return pageShell({
 		title: note.title,
 		site,
@@ -125,14 +137,14 @@ export function notePage(
 function noteArticle(
 	note: IndexedNote,
 	result: RenderResult,
-	index: VaultIndex,
+	site: SiteContext,
 ): string {
-	const breadcrumbs = breadcrumbsFor(note);
+	const breadcrumbs = breadcrumbsFor(note, site);
 	const updatedTs = note.frontmatter["updated"];
 	const updated =
 		typeof updatedTs === "string"
 			? updatedTs
-			: new Date(note.mtime).toISOString().slice(0, 10);
+			: formatHumanDate(note.mtime);
 	const tagsHtml = note.tags.length
 		? note.tags
 				.map(
@@ -141,7 +153,8 @@ function noteArticle(
 				)
 				.join("")
 		: "";
-	void index;
+	const reading = readingMinutes(note.body);
+	const metaSuffix = `<span class="updated">Updated ${esc(updated)}${reading ? ` · ${reading} min` : ""}</span>`;
 	return [
 		`<article>`,
 		`<div class="crumbs">${breadcrumbs}</div>`,
@@ -149,7 +162,7 @@ function noteArticle(
 		descriptionLede(note),
 		`<div class="meta-row">`,
 		tagsHtml,
-		`<span class="updated">Updated ${esc(updated)}</span>`,
+		metaSuffix,
 		`</div>`,
 		result.html,
 		`</article>`,
@@ -162,13 +175,13 @@ function descriptionLede(note: IndexedNote): string {
 	return `<p class="lede">${esc(desc.trim())}</p>`;
 }
 
-function breadcrumbsFor(note: IndexedNote): string {
+function breadcrumbsFor(note: IndexedNote, site: SiteContext): string {
 	const parts = note.path.replace(/\.md$/i, "").split("/");
 	const tail = parts.pop() ?? "";
-	const segments: string[] = [`<a href="/">Home</a>`];
-	let acc = "";
+	const segments: string[] = [
+		`<a href="/">${esc(site.vaultName)}</a>`,
+	];
 	for (const p of parts) {
-		acc = acc ? `${acc}/${p}` : p;
 		segments.push(`<span>/</span><span>${esc(p)}</span>`);
 	}
 	segments.push(`<span>/</span><span>${esc(tail)}</span>`);
@@ -236,17 +249,17 @@ export function homePage(site: SiteContext): string {
 		`<ul class="recent-list">`,
 		...recents.map(
 			(n) =>
-				`<li><a class="wikilink" href="/${n.slug}">${esc(n.title)}</a></li>`,
+				`<li><a class="wikilink" href="/${n.slug}">${esc(n.title)}</a> <span class="muted">${esc(formatHumanDate(n.mtime))}</span></li>`,
 		),
 		`</ul>`,
 		`</section>`,
 		tags.length
-			? `<section class="tagcloud"><h2>Tags</h2>${tags
+			? `<section class="tagcloud"><h2>Tags</h2><div class="tagcloud-list">${tags
 					.map(
 						(t) =>
 							`<a class="pill" href="/tags/${encodeURIComponent(t.tag)}">#${esc(t.tag)} <span class="count">${t.count}</span></a>`,
 					)
-					.join("")}</section>`
+					.join("")}</div></section>`
 			: "",
 		`</article>`,
 	].join("");
@@ -264,6 +277,7 @@ export function tagsIndexPage(site: SiteContext): string {
 	const tags = site.index.allTags();
 	const main = [
 		`<article>`,
+		`<div class="crumbs"><a href="/">${esc(site.vaultName)}</a> <span>/</span> <span>Tags</span></div>`,
 		`<h1>Tags</h1>`,
 		`<p class="lede">${tags.length} tag${tags.length === 1 ? "" : "s"} in this vault.</p>`,
 		`<ul class="tag-list">`,
@@ -288,13 +302,13 @@ export function tagPage(site: SiteContext, tag: string): string {
 	const notes = site.index.notesByTag(tag);
 	const main = [
 		`<article>`,
-		`<div class="crumbs"><a href="/">Home</a> <span>/</span> <a href="/tags/">Tags</a> <span>/</span> <span>#${esc(tag)}</span></div>`,
-		`<h1>#${esc(tag)}</h1>`,
+		`<div class="crumbs"><a href="/">${esc(site.vaultName)}</a> <span>/</span> <a href="/tags/">Tags</a> <span>/</span> <span>#${esc(tag)}</span></div>`,
+		`<h1><span class="hash" aria-hidden="true">${ICON_HASH}</span>#${esc(tag)}</h1>`,
 		`<p class="lede">${notes.length} note${notes.length === 1 ? "" : "s"}.</p>`,
 		`<ul class="tag-notes">`,
 		...notes.map(
 			(n) =>
-				`<li><a class="wikilink" href="/${n.slug}">${esc(n.title)}</a></li>`,
+				`<li><a class="wikilink" href="/${n.slug}">${esc(n.title)}</a> <span class="muted">${esc(formatHumanDate(n.mtime))}</span></li>`,
 		),
 		`</ul>`,
 		`</article>`,
@@ -312,6 +326,7 @@ export function tagPage(site: SiteContext, tag: string): string {
 export function graphPage(site: SiteContext): string {
 	const main = [
 		`<article class="graph-page">`,
+		`<div class="crumbs"><a href="/">${esc(site.vaultName)}</a> <span>/</span> <span>Graph</span></div>`,
 		`<h1>Graph</h1>`,
 		`<p class="lede">A force-directed view of the vault's wikilinks.</p>`,
 		`<div id="graph-root" data-src="/api/graph.json"></div>`,
@@ -330,9 +345,10 @@ export function graphPage(site: SiteContext): string {
 export function searchPage(site: SiteContext): string {
 	const main = [
 		`<article class="search-page">`,
+		`<div class="crumbs"><a href="/">${esc(site.vaultName)}</a> <span>/</span> <span>Search</span></div>`,
 		`<h1>Search</h1>`,
 		`<p class="lede">Type to filter ${site.index.count()} notes.</p>`,
-		`<input id="search-input" type="search" placeholder="Search…" autofocus>`,
+		`<input id="search-input" type="search" placeholder="Search the wiki" autofocus>`,
 		`<div id="search-results" data-src="/api/search-index.json"></div>`,
 		`</article>`,
 	].join("");
@@ -351,7 +367,7 @@ export function notFoundPage(site: SiteContext, requested: string): string {
 		`<article class="not-found">`,
 		`<h1>Not found</h1>`,
 		`<p class="lede">No note at <code>${esc(requested)}</code>.</p>`,
-		`<p><a class="wikilink" href="/">Return home</a>.</p>`,
+		`<p><span class="ico" aria-hidden="true">${ICON_LINK}</span> <a class="wikilink" href="/">Return home</a>.</p>`,
 		`</article>`,
 	].join("");
 	return pageShell({
@@ -366,6 +382,34 @@ export function notFoundPage(site: SiteContext, requested: string): string {
 
 export function tagSlug(tag: string): string {
 	return slugify(tag);
+}
+
+function readingMinutes(body: string): number {
+	const words = body.replace(/\s+/g, " ").trim().split(" ").filter(Boolean).length;
+	if (words === 0) return 0;
+	return Math.max(1, Math.round(words / 220));
+}
+
+function formatHumanDate(input: number | string): string {
+	const ts = typeof input === "string" ? Date.parse(input) : input;
+	if (!Number.isFinite(ts)) return typeof input === "string" ? input : "";
+	const d = new Date(ts);
+	const months = [
+		"Jan",
+		"Feb",
+		"Mar",
+		"Apr",
+		"May",
+		"Jun",
+		"Jul",
+		"Aug",
+		"Sep",
+		"Oct",
+		"Nov",
+		"Dec",
+	];
+	const dd = String(d.getDate()).padStart(2, "0");
+	return `${dd} ${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 function esc(s: string): string {

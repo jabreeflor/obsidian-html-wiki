@@ -11,7 +11,7 @@ import {
 	searchPage,
 	notFoundPage,
 	SiteContext,
-} from "./template";
+} from "./theme/templates";
 import { buildSearchPayload } from "./search-index";
 
 export interface AttachmentSource {
