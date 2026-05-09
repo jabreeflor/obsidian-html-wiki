@@ -1,10 +1,17 @@
-import { Plugin, TAbstractFile, TFile } from "obsidian";
+import { Notice, Plugin, TAbstractFile, TFile } from "obsidian";
 import { DEFAULT_SETTINGS, HtmlWikiSettings } from "./settings";
 import { RawNote, VaultIndex } from "./vault-index";
+import {
+	AssetBundle,
+	AttachmentSource,
+	HtmlWikiServer,
+	loadDefaultAssets,
+} from "./server";
 
 export default class HtmlWikiPlugin extends Plugin {
 	settings: HtmlWikiSettings = DEFAULT_SETTINGS;
 	index: VaultIndex | null = null;
+	server: HtmlWikiServer | null = null;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
@@ -12,13 +19,19 @@ export default class HtmlWikiPlugin extends Plugin {
 			frontmatterKey: this.settings.frontmatterKey,
 			exclusionValue: this.settings.exclusionValue,
 		});
-		this.app.workspace.onLayoutReady(() => {
-			void this.buildInitialIndex();
-		});
 		this.wireVaultEvents();
+		this.app.workspace.onLayoutReady(() => {
+			void this.boot();
+		});
 	}
 
 	async onunload(): Promise<void> {
+		try {
+			await this.server?.stop();
+		} catch (e) {
+			console.error("HTML Wiki: server stop failed", e);
+		}
+		this.server = null;
 		this.index = null;
 	}
 
@@ -33,6 +46,29 @@ export default class HtmlWikiPlugin extends Plugin {
 			frontmatterKey: this.settings.frontmatterKey,
 			exclusionValue: this.settings.exclusionValue,
 		});
+	}
+
+	private async boot(): Promise<void> {
+		await this.buildInitialIndex();
+		if (!this.index) return;
+		const assets = loadDefaultAssets();
+		const attachments = this.makeAttachmentSource();
+		this.server = new HtmlWikiServer({
+			vaultName: this.app.vault.getName(),
+			index: this.index,
+			attachments,
+			assets,
+		});
+		try {
+			const result = await this.server.start({
+				port: this.settings.port,
+				host: this.settings.bindAll ? "0.0.0.0" : "127.0.0.1",
+			});
+			new Notice(`HTML Wiki: serving at http://${result.host}:${result.port}/`);
+		} catch (e) {
+			const msg = e instanceof Error ? e.message : String(e);
+			new Notice(`HTML Wiki: could not start server (${msg})`);
+		}
 	}
 
 	private async buildInitialIndex(): Promise<void> {
@@ -91,8 +127,26 @@ export default class HtmlWikiPlugin extends Plugin {
 			content,
 		});
 	}
+
+	private makeAttachmentSource(): AttachmentSource {
+		const adapter = this.app.vault.adapter;
+		return {
+			async read(rel: string): Promise<Uint8Array | null> {
+				try {
+					const exists = await adapter.exists(rel);
+					if (!exists) return null;
+					const buf = await adapter.readBinary(rel);
+					return new Uint8Array(buf);
+				} catch {
+					return null;
+				}
+			},
+		};
+	}
 }
 
 function isMarkdownFile(file: TAbstractFile): file is TFile {
 	return file instanceof TFile && file.extension === "md";
 }
+
+export type { AssetBundle };

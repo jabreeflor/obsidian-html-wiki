@@ -1,0 +1,13 @@
+// HTML Wiki client — placeholder. Search/graph/mermaid are wired in later milestones.
+(function () {
+	"use strict";
+	var search = document.getElementById("site-search");
+	if (search) {
+		document.addEventListener("keydown", function (e) {
+			if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+				e.preventDefault();
+				search.focus();
+			}
+		});
+	}
+})();

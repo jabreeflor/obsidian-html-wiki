@@ -32,6 +32,7 @@ const ctx = await esbuild.context({
   ],
   format: "cjs",
   target: "es2018",
+  loader: { ".css": "text", ".txt": "text" },
   logLevel: "info",
   sourcemap: prod ? false : "inline",
   treeShaking: true,

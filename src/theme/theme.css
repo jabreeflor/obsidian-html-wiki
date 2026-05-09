@@ -1,0 +1,52 @@
+/*
+ * Quiet Reference theme — minimal placeholder.
+ * Faithful Quiet Reference styling lands in M4.
+ */
+:root {
+	--bg: #FFFFFF;
+	--bg-soft: #F7F7F5;
+	--ink: #0F1115;
+	--ink-2: #3C404A;
+	--ink-3: #6B7280;
+	--ink-4: #9AA0AB;
+	--rule: #E8E8E4;
+	--rule-strong: #D4D4CE;
+	--accent: #1C2A3A;
+	--highlight: #F5EFD8;
+	--serif: "Newsreader", Georgia, serif;
+	--sans: "Inter", system-ui, sans-serif;
+	--mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body.theme-quiet-reference {
+	background: var(--bg);
+	color: var(--ink);
+	font-family: var(--sans);
+	font-size: 15px;
+	line-height: 1.6;
+}
+
+a { color: inherit; }
+
+main.layout {
+	max-width: 1400px;
+	margin: 0 auto;
+}
+
+article {
+	padding: 2rem 1.5rem 4rem;
+	max-width: 46rem;
+}
+
+.wikilink { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--rule-strong); }
+.wikilink.unresolved { color: var(--ink-4); border-bottom-style: dashed; cursor: not-allowed; }
+
+.callout { border: 1px solid var(--rule); border-radius: 8px; padding: 0.9rem 1.1rem; margin: 1.4rem 0; background: var(--bg-soft); }
+.callout-label { font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.74rem; margin-bottom: 0.3rem; }
+
+pre.mermaid { background: var(--bg-soft); border: 1px solid var(--rule); border-radius: 6px; padding: 0.9rem 1.1rem; }
+
+.embed { max-width: 100%; height: auto; }
