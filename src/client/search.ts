@@ -123,9 +123,15 @@ function closePopover(): void {
 	popover.overlay.hidden = true;
 }
 
+const renderTokens = new WeakMap<HTMLElement, number>();
+
 async function renderResults(query: string, target: HTMLElement): Promise<void> {
-	clearChildren(target);
+	const token = (renderTokens.get(target) ?? 0) + 1;
+	renderTokens.set(target, token);
+	const isStale = (): boolean => renderTokens.get(target) !== token;
+
 	if (!query.trim()) {
+		clearChildren(target);
 		target.appendChild(emptyState("Type to search."));
 		return;
 	}
@@ -133,11 +139,15 @@ async function renderResults(query: string, target: HTMLElement): Promise<void> 
 	try {
 		ms = await loadIndex();
 	} catch (e) {
+		if (isStale()) return;
+		clearChildren(target);
 		target.appendChild(emptyState("Couldn't load the search index."));
 		console.error(e);
 		return;
 	}
+	if (isStale()) return;
 	const results = ms.search(query, { boost: { title: 3, tags: 2, excerpt: 1 }, prefix: true, fuzzy: 0.15 }).slice(0, 20);
+	clearChildren(target);
 	if (!results.length) {
 		target.appendChild(emptyState("No matches."));
 		return;

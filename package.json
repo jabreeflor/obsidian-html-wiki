@@ -1,6 +1,6 @@
 {
   "name": "obsidian-html-wiki",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Turn any Obsidian vault into a browsable HTML wiki, in real time, with no export step.",
   "main": "main.js",
   "scripts": {
@@ -18,7 +18,7 @@
     "wiki",
     "html"
   ],
-  "author": "",
+  "author": "Jabree Flor",
   "license": "MIT",
   "devDependencies": {
     "@types/markdown-it": "^14.1.2",

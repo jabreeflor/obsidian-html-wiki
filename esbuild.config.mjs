@@ -50,6 +50,25 @@ async function buildClient() {
 
 await buildClient();
 
+// 1b. Build the dev-server harness used by the screenshot tooling. Lives in
+//     build/dev-server.cjs and is invoked manually; not part of the plugin
+//     artifact.
+async function buildDevServer() {
+	await esbuild.build({
+		entryPoints: ["scripts/dev-server-entry.ts"],
+		bundle: true,
+		format: "cjs",
+		target: "node20",
+		platform: "node",
+		outfile: "build/dev-server.cjs",
+		loader: { ".css": "text", ".txt": "text" },
+		logLevel: "warning",
+		external: [...builtins, ...builtins.map((b) => `node:${b}`)],
+	});
+}
+
+await buildDevServer();
+
 // 2. Build the Obsidian plugin (CJS) for desktop.
 const ctx = await esbuild.context({
 	banner: { js: banner },
