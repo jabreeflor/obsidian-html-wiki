@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Calculus of Boredom — Folio</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FBFAF7;
+    --ink: #14110C;
+    --ink-2: #444038;
+    --ink-3: #7A736A;
+    --ink-4: #ADA59A;
+    --rule: #E5DFD2;
+    --rule-strong: #C9C1B0;
+    --accent: #2F4F3A; /* moss / dark forest, archival */
+    --accent-soft: #C7D2C2;
+    --serif: "Newsreader", "Tiempos Text", Georgia, serif;
+    --sans: "Inter", -apple-system, system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  a { color: inherit; }
+
+  /* Floating nav rail (left) */
+  .rail {
+    position: fixed;
+    top: 0; left: 0;
+    height: 100vh;
+    width: 4rem;
+    border-right: 1px solid var(--rule);
+    background: var(--bg);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 1.4rem 0;
+    z-index: 5;
+  }
+  .rail .mark {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.6rem;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 1.8rem;
+  }
+  .rail button {
+    background: transparent;
+    border: 0;
+    color: var(--ink-3);
+    width: 2.4rem; height: 2.4rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 0.3rem;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--sans);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .rail button:hover { background: var(--rule); color: var(--ink); }
+  .rail button.active { background: var(--ink); color: var(--bg); }
+  .rail .spacer { flex: 1; }
+
+  @media (max-width: 780px) { .rail { display: none; } }
+
+  /* Page container */
+  .page {
+    margin-left: 4rem;
+    padding: 4rem 6vw 6rem;
+    max-width: 60rem;
+    margin-right: auto;
+  }
+  @media (max-width: 780px) {
+    .page { margin-left: 0; padding: 2rem 1.4rem 4rem; }
+  }
+
+  /* Folio header */
+  .folio-head {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 1.4rem;
+    margin-bottom: 3rem;
+  }
+  .folio-head .left .eyebrow {
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--accent);
+    margin-bottom: 0.8rem;
+  }
+  .folio-head h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(2.6rem, 5.5vw, 4.6rem);
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+  .folio-head h1 em { font-style: italic; color: var(--accent); }
+  .folio-head .right {
+    text-align: right;
+    font-family: var(--sans);
+    font-size: 0.74rem;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    line-height: 1.6;
+  }
+  .folio-head .right .num {
+    font-family: var(--serif);
+    font-size: 1.4rem;
+    color: var(--ink);
+    text-transform: none;
+    letter-spacing: 0;
+    display: block;
+  }
+
+  /* Deck under headline */
+  .deck {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.4rem;
+    color: var(--ink-2);
+    line-height: 1.45;
+    max-width: 38rem;
+    margin: 0 0 3rem;
+  }
+
+  /* Body */
+  .body p {
+    font-family: var(--serif);
+    font-size: 1.18rem;
+    line-height: 1.75;
+    color: var(--ink);
+    margin: 0 0 1.4rem;
+    max-width: 38rem;
+  }
+  .body p.first::first-letter {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 4.2rem;
+    line-height: 0.9;
+    float: left;
+    margin: 0.35rem 0.55rem -0.2rem 0;
+    color: var(--accent);
+  }
+  .body h2 {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.9rem;
+    color: var(--ink);
+    margin: 3rem 0 1rem;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+  .body h2 .num {
+    font-family: var(--sans);
+    font-style: normal;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 0.4rem;
+  }
+  .body a.wikilink {
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--accent);
+  }
+  .body a.wikilink:hover { color: var(--accent); border-bottom-style: solid; }
+
+  /* Marginalia */
+  figure.aside {
+    margin: 2rem 0;
+    padding: 1rem 1.2rem;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    max-width: 38rem;
+  }
+  figure.aside .label {
+    font-family: var(--sans);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    margin-bottom: 0.4rem;
+  }
+  figure.aside p {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.05rem;
+    line-height: 1.55;
+    color: var(--ink-2);
+    margin: 0;
+  }
+
+  /* Footer block: backlinks + tags + graph */
+  .endmatter {
+    margin-top: 5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+  }
+  @media (max-width: 780px) { .endmatter { grid-template-columns: 1fr; } }
+  .endmatter h3 {
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    margin: 0 0 1rem;
+  }
+  .backlinks .item {
+    display: grid;
+    grid-template-columns: 2.4rem 1fr;
+    gap: 0.8rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--rule);
+    align-items: baseline;
+  }
+  .backlinks .item:first-child { border-top: 1px solid var(--rule); }
+  .backlinks .num {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--accent);
+  }
+  .backlinks .title {
+    font-family: var(--serif);
+    font-weight: 500;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 1.05rem;
+    line-height: 1.3;
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+  .backlinks .excerpt {
+    font-family: var(--serif);
+    font-size: 0.95rem;
+    font-style: italic;
+    color: var(--ink-3);
+    line-height: 1.5;
+  }
+
+  .graph-card {
+    border: 1px solid var(--rule);
+    background: rgba(47, 79, 58, 0.04);
+    height: 14rem;
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+  }
+  .graph-card svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .graph-card .caption {
+    position: absolute;
+    bottom: 0.7rem; left: 0.9rem;
+    font-family: var(--sans);
+    font-size: 0.7rem;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+  }
+
+  .colophon {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule);
+    text-align: center;
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+  }
+  .colophon .ornament {
+    font-family: var(--serif);
+    font-style: italic;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--accent);
+    font-size: 1.4rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.4rem; }
+  .tags a {
+    font-family: var(--sans);
+    font-size: 0.74rem;
+    color: var(--ink-2);
+    text-decoration: none;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(47, 79, 58, 0.06);
+  }
+  .tags a:hover { background: var(--accent); color: var(--bg); }
+</style>
+</head>
+<body>
+
+<nav class="rail">
+  <div class="mark">A</div>
+  <button class="active" title="Index">IX</button>
+  <button title="Tags">#</button>
+  <button title="Graph">⊕</button>
+  <button title="Search">⌕</button>
+  <div class="spacer"></div>
+  <button title="Random">?</button>
+</nav>
+
+<div class="page">
+
+  <header class="folio-head">
+    <div class="left">
+      <div class="eyebrow">An Atlas of Things — Vol. 03</div>
+      <h1>The <em>Calculus</em><br>of Boredom</h1>
+    </div>
+    <div class="right">
+      <span class="num">№ 27</span>
+      9 May 2026<br>
+      Essay · 7 min
+    </div>
+  </header>
+
+  <p class="deck">A short defense of the empty hour, and the strange productivity that lives inside of it.</p>
+
+  <div class="body">
+    <p class="first">Boredom has acquired, in our era, the reputation of a small civic failure. To be bored at a dinner party is rude; to be bored at work is suspicious; to be bored on a Sunday afternoon, alone, with a book one has read before — this is, we are told, the entry-level form of a wasted life.</p>
+
+    <p>I want to argue the opposite. Boredom is not the absence of thought. It is the <a href="#" class="wikilink">slack capacity</a> that thought needs in order to occur — the same way a muscle requires rest, or a field a fallow year. The condition we have learned to treat as a deficiency is, more honestly, the precondition for any work that does not consist of mere reaction.</p>
+
+    <figure class="aside">
+      <div class="label">Marginal note</div>
+      <p>The cognitive scientist <a href="#" class="wikilink">Mihaly Csikszentmihalyi</a> distinguished between flow and apathy; he was less interested in the territory between them, where most thinking actually happens.</p>
+    </figure>
+
+    <h2><span class="num">§ I</span>What attention is for</h2>
+    <p>Consider the paradox: every productive person you can name guards their time savagely, and yet the most useful hours in their week are the ones in which they did, by their own account, "nothing." See: <a href="#" class="wikilink">Notes against productivity</a>.</p>
+
+    <p>The mathematics here are inverted. The output of an hour of focused work is roughly linear in the number of such hours. The output of an hour of <em>permitted boredom</em> — call it the integration of small, unprompted thoughts — compounds. This is why so much of what passes for genius is really just somebody who had Tuesday afternoons free for thirty years.</p>
+
+    <h2><span class="num">§ II</span>A small experiment</h2>
+    <p>For one week, schedule one fallow afternoon. No phone, no agenda, no project. Note what surfaces. The protocol is sketched in <a href="#" class="wikilink">A field guide to attention</a>.</p>
+  </div>
+
+  <section class="endmatter">
+    <div>
+      <h3>Linked from</h3>
+      <div class="backlinks">
+        <div class="item">
+          <span class="num">i.</span>
+          <div>
+            <a href="#" class="title">Notes against productivity</a>
+            <div class="excerpt">…closely related to the argument in <em>The Calculus of Boredom</em>, where unstructured time is treated as raw material…</div>
+          </div>
+        </div>
+        <div class="item">
+          <span class="num">ii.</span>
+          <div>
+            <a href="#" class="title">A field guide to attention</a>
+            <div class="excerpt">…the fallow hour has a particular grammar, which I've described elsewhere…</div>
+          </div>
+        </div>
+        <div class="item">
+          <span class="num">iii.</span>
+          <div>
+            <a href="#" class="title">On taking walks</a>
+            <div class="excerpt">…walking is the physical analog to the attention I described in this essay…</div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:2rem">Tags</h3>
+      <div class="tags">
+        <a href="#">attention</a>
+        <a href="#">essays</a>
+        <a href="#">reading</a>
+        <a href="#">slow-software</a>
+      </div>
+    </div>
+
+    <div>
+      <h3>Local graph</h3>
+      <div class="graph-card">
+        <svg viewBox="0 0 400 220" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          <g stroke="#C9C1B0" stroke-width="1" fill="none">
+            <line x1="200" y1="110" x2="100" y2="60"/>
+            <line x1="200" y1="110" x2="310" y2="55"/>
+            <line x1="200" y1="110" x2="320" y2="160"/>
+            <line x1="200" y1="110" x2="80" y2="170"/>
+            <line x1="200" y1="110" x2="180" y2="40"/>
+            <line x1="100" y1="60" x2="80" y2="170"/>
+            <line x1="310" y1="55" x2="320" y2="160"/>
+          </g>
+          <g fill="#7A736A">
+            <circle cx="100" cy="60" r="4"/>
+            <circle cx="310" cy="55" r="4"/>
+            <circle cx="320" cy="160" r="4"/>
+            <circle cx="80" cy="170" r="4"/>
+            <circle cx="180" cy="40" r="3"/>
+          </g>
+          <circle cx="200" cy="110" r="7" fill="#2F4F3A"/>
+        </svg>
+        <span class="caption">7 connections</span>
+      </div>
+    </div>
+  </section>
+
+  <footer class="colophon">
+    <div class="ornament">❦</div>
+    Built with Obsidian HTML Wiki · Newsreader &amp; Inter · No telemetry
+  </footer>
+
+</div>
+
+</body>
+</html>

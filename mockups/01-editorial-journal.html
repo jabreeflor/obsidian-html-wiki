@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Calculus of Boredom — Editorial Journal</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..800;1,6..72,300..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F7F4ED;
+    --paper-edge: #EFEAE0;
+    --ink: #1A1815;
+    --ink-soft: #4A4640;
+    --ink-faint: #8A8378;
+    --rule: #DCD6C8;
+    --accent: #6A1E1E; /* oxblood */
+    --accent-soft: #B98F7E;
+    --serif: "Newsreader", "Tiempos Text", Georgia, serif;
+    --sans: "Inter", -apple-system, system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+    --reading: 38rem;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-optical-sizing: auto;
+    font-variant-numeric: oldstyle-nums proportional-nums;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* Top masthead */
+  header.masthead {
+    border-bottom: 1px solid var(--rule);
+    padding: 1.4rem 2rem;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    background: var(--paper);
+    position: sticky; top: 0; z-index: 5;
+    backdrop-filter: blur(8px);
+  }
+  .masthead .wordmark {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 1.05rem;
+    letter-spacing: 0.01em;
+  }
+  .masthead .wordmark em { font-style: italic; color: var(--accent); }
+  .masthead nav {
+    font-family: var(--sans);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-soft);
+    display: flex; gap: 1.6rem;
+  }
+  .masthead nav a { color: inherit; text-decoration: none; }
+  .masthead nav a:hover { color: var(--accent); }
+  .masthead .search {
+    font-family: var(--sans);
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+    padding: 0.45rem 0.7rem;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    background: transparent;
+    letter-spacing: 0.05em;
+  }
+
+  /* Layout */
+  main {
+    display: grid;
+    grid-template-columns: 14rem minmax(0, 1fr) 16rem;
+    gap: 3rem;
+    max-width: 78rem;
+    margin: 0 auto;
+    padding: 3.5rem 2.5rem 6rem;
+  }
+  @media (max-width: 1100px) {
+    main { grid-template-columns: 12rem minmax(0, 1fr); }
+    aside.right { display: none; }
+  }
+  @media (max-width: 780px) {
+    main { grid-template-columns: 1fr; }
+    aside.left { display: none; }
+  }
+
+  /* Left tree */
+  aside.left {
+    font-family: var(--sans);
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    border-right: 1px solid var(--rule);
+    padding-right: 1.5rem;
+    position: sticky;
+    top: 5.5rem;
+    align-self: start;
+    max-height: calc(100vh - 7rem);
+    overflow: auto;
+  }
+  aside.left h4 {
+    font-family: var(--sans);
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 1.2rem 0 0.4rem;
+    font-weight: 500;
+  }
+  aside.left h4:first-child { margin-top: 0; }
+  aside.left ul { list-style: none; padding: 0; margin: 0; }
+  aside.left li { padding: 0.1rem 0; }
+  aside.left a { color: var(--ink-soft); text-decoration: none; }
+  aside.left a:hover { color: var(--accent); }
+  aside.left a.active { color: var(--ink); font-weight: 500; border-left: 2px solid var(--accent); padding-left: 0.5rem; margin-left: -0.7rem; }
+
+  /* Article */
+  article { max-width: var(--reading); }
+  article .breadcrumb {
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    margin-bottom: 1.2rem;
+  }
+  article h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(2.2rem, 4.2vw, 3.6rem);
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    margin: 0 0 0.6rem;
+  }
+  article .deck {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.18rem;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin: 0 0 1.6rem;
+    max-width: 32rem;
+  }
+  article .meta {
+    font-family: var(--sans);
+    font-size: 0.74rem;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 0.7rem 0;
+    margin-bottom: 2.2rem;
+    display: flex; gap: 1.4rem; flex-wrap: wrap;
+  }
+  article .meta .tag { color: var(--accent); }
+  article p {
+    font-size: 1.13rem;
+    line-height: 1.7;
+    margin: 0 0 1.2rem;
+  }
+  article p.lede::first-letter {
+    font-family: var(--serif);
+    font-weight: 500;
+    initial-letter: 3 2;
+    -webkit-initial-letter: 3 2;
+    margin-right: 0.5rem;
+    color: var(--accent);
+  }
+  article h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 1.55rem;
+    margin: 2.6rem 0 0.8rem;
+    line-height: 1.2;
+  }
+  article a.wikilink {
+    color: var(--ink);
+    text-decoration: none;
+    background-image: linear-gradient(transparent 60%, rgba(106, 30, 30, 0.18) 60%);
+    padding: 0 0.06em;
+    transition: background-color 0.15s;
+  }
+  article a.wikilink:hover { background-color: rgba(106, 30, 30, 0.18); }
+  article a.wikilink::after { content: ""; }
+
+  /* Callout */
+  .callout {
+    border-left: 2px solid var(--accent);
+    background: rgba(106, 30, 30, 0.04);
+    padding: 1rem 1.3rem;
+    margin: 1.6rem 0;
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--ink-soft);
+  }
+  .callout .label {
+    font-family: var(--sans);
+    font-style: normal;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 0.3rem;
+  }
+
+  /* Code */
+  pre, code {
+    font-family: var(--mono);
+    font-size: 0.92rem;
+  }
+  pre {
+    background: #FBF8F1;
+    border: 1px solid var(--rule);
+    padding: 1rem 1.2rem;
+    overflow: auto;
+    line-height: 1.55;
+  }
+
+  /* Right rail */
+  aside.right {
+    font-family: var(--sans);
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    border-left: 1px solid var(--rule);
+    padding-left: 1.5rem;
+    position: sticky;
+    top: 5.5rem;
+    align-self: start;
+    max-height: calc(100vh - 7rem);
+    overflow: auto;
+  }
+  aside.right h4 {
+    font-family: var(--sans);
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 0.7rem;
+    font-weight: 500;
+  }
+  aside.right .backlink {
+    border-top: 1px solid var(--rule);
+    padding: 0.7rem 0;
+  }
+  aside.right .backlink:last-child { border-bottom: 1px solid var(--rule); }
+  aside.right .backlink .title {
+    font-family: var(--serif);
+    font-weight: 500;
+    color: var(--ink);
+    font-size: 0.95rem;
+    line-height: 1.3;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 0.3rem;
+  }
+  aside.right .backlink .excerpt {
+    font-family: var(--serif);
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+    line-height: 1.45;
+    font-style: italic;
+  }
+  aside.right h4.tags-head { margin-top: 2rem; }
+  .tagcloud { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .tagcloud a {
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    text-decoration: none;
+    padding: 0.18rem 0.5rem;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+  }
+  .tagcloud a:hover { border-color: var(--accent); color: var(--accent); }
+
+  footer.colophon {
+    border-top: 1px solid var(--rule);
+    padding: 2rem 2.5rem;
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    text-align: center;
+  }
+  footer .ornament {
+    font-family: var(--serif);
+    font-style: italic;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--accent-soft);
+    margin-bottom: 0.4rem;
+    font-size: 1.1rem;
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wordmark">An <em>Atlas</em> of Things</div>
+  <nav>
+    <a href="#">Index</a>
+    <a href="#">Tags</a>
+    <a href="#">Graph</a>
+    <a href="#">Random</a>
+  </nav>
+  <input class="search" placeholder="Search ⌘K" />
+</header>
+
+<main>
+  <aside class="left">
+    <h4>On reading</h4>
+    <ul>
+      <li><a href="#" class="active">The Calculus of Boredom</a></li>
+      <li><a href="#">Marginalia, defended</a></li>
+      <li><a href="#">Why we underline</a></li>
+    </ul>
+    <h4>On working</h4>
+    <ul>
+      <li><a href="#">Notes against productivity</a></li>
+      <li><a href="#">The shape of a good day</a></li>
+      <li><a href="#">Slow software</a></li>
+    </ul>
+    <h4>Reference</h4>
+    <ul>
+      <li><a href="#">A field guide to attention</a></li>
+      <li><a href="#">On taking walks</a></li>
+    </ul>
+  </aside>
+
+  <article>
+    <div class="breadcrumb">On Reading · Essay</div>
+    <h1>The Calculus of Boredom</h1>
+    <p class="deck">A short defense of the empty hour, and the strange productivity that lives inside of it.</p>
+    <div class="meta">
+      <span>09 May 2026</span>
+      <span>· 7 min read</span>
+      <span class="tag">#attention</span>
+      <span class="tag">#essays</span>
+    </div>
+
+    <p class="lede">Boredom has acquired, in our era, the reputation of a small civic failure. To be bored at a dinner party is rude; to be bored at work is suspicious; to be bored on a Sunday afternoon, alone, with a book one has read before — this is, we are told, the entry-level form of a wasted life.</p>
+
+    <p>I want to argue the opposite. Boredom is not the absence of thought. It is the <a href="#" class="wikilink">slack capacity</a> that thought needs in order to occur — the same way a muscle requires rest, or a field a fallow year. The condition we have learned to treat as a deficiency is, more honestly, the precondition for any work that does not consist of mere reaction.</p>
+
+    <div class="callout">
+      <span class="label">Marginal note</span>
+      The cognitive scientist <a href="#" class="wikilink">Mihaly Csikszentmihalyi</a> distinguished between flow and apathy; he was less interested in the territory between them, where most thinking actually happens.
+    </div>
+
+    <h2>What attention is for</h2>
+    <p>Consider the paradox: every productive person you can name guards their time savagely, and yet the most useful hours in their week are the ones in which they did, by their own account, "nothing." See: <a href="#" class="wikilink">Notes against productivity</a>.</p>
+
+    <p>The mathematics here are inverted. The output of an hour of focused work is roughly linear in the number of such hours. The output of an hour of <em>permitted boredom</em> — call it the integration of small, unprompted thoughts — compounds. This is why so much of what passes for genius is really just somebody who had Tuesday afternoons free for thirty years.</p>
+  </article>
+
+  <aside class="right">
+    <h4>Linked from</h4>
+    <div class="backlink">
+      <a href="#" class="title">Notes against productivity</a>
+      <div class="excerpt">…closely related to the argument in <em>The Calculus of Boredom</em>, where unstructured time is treated not as waste but as raw material…</div>
+    </div>
+    <div class="backlink">
+      <a href="#" class="title">A field guide to attention</a>
+      <div class="excerpt">…the fallow hour, which I've written about elsewhere, has a particular grammar…</div>
+    </div>
+    <div class="backlink">
+      <a href="#" class="title">On taking walks</a>
+      <div class="excerpt">…walking is the physical analog to the kind of attention I described in the calculus essay…</div>
+    </div>
+
+    <h4 class="tags-head">Tags on this page</h4>
+    <div class="tagcloud">
+      <a href="#">attention</a>
+      <a href="#">essays</a>
+      <a href="#">reading</a>
+      <a href="#">slow-software</a>
+    </div>
+  </aside>
+</main>
+
+<footer class="colophon">
+  <div class="ornament">❦</div>
+  Built with Obsidian HTML Wiki · Newsreader &amp; Inter · No telemetry
+</footer>
+
+</body>
+</html>

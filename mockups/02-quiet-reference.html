@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Calculus of Boredom — Quiet Reference</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFFFFF;
+    --bg-soft: #F7F7F5;
+    --ink: #0F1115;
+    --ink-2: #3C404A;
+    --ink-3: #6B7280;
+    --ink-4: #9AA0AB;
+    --rule: #E8E8E4;
+    --rule-strong: #D4D4CE;
+    --accent: #1C2A3A; /* deep ink-blue, not "tech" blue */
+    --highlight: #F5EFD8; /* paper highlight */
+    --serif: "Newsreader", "Tiempos Text", Georgia, serif;
+    --sans: "Inter", -apple-system, system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  a { color: inherit; }
+
+  /* Top bar */
+  header.top {
+    border-bottom: 1px solid var(--rule);
+    padding: 0.85rem 1.4rem;
+    display: grid;
+    grid-template-columns: 16rem 1fr auto;
+    align-items: center;
+    gap: 1.5rem;
+    position: sticky; top: 0; background: rgba(255,255,255,0.86); backdrop-filter: blur(10px); z-index: 5;
+  }
+  .brand {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .brand .dot { color: var(--accent); }
+  .search {
+    width: 100%;
+    max-width: 28rem;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 0.45rem 0.75rem;
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    color: var(--ink-3);
+    background: var(--bg-soft);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .search .kbd {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink-4);
+    border: 1px solid var(--rule);
+    padding: 0.05rem 0.35rem;
+    border-radius: 3px;
+    background: var(--bg);
+  }
+  .top-nav { font-size: 0.82rem; color: var(--ink-3); display: flex; gap: 1.2rem; }
+  .top-nav a { text-decoration: none; }
+  .top-nav a:hover { color: var(--ink); }
+
+  /* 3-col layout */
+  main {
+    display: grid;
+    grid-template-columns: 16rem minmax(0, 1fr) 16rem;
+    gap: 0;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  @media (max-width: 1100px) {
+    main { grid-template-columns: 14rem minmax(0, 1fr); }
+    aside.toc { display: none; }
+  }
+  @media (max-width: 780px) {
+    main { grid-template-columns: 1fr; }
+    aside.nav { display: none; }
+  }
+
+  /* Left nav (file tree) */
+  aside.nav {
+    border-right: 1px solid var(--rule);
+    padding: 1.4rem 1rem 4rem 1.4rem;
+    position: sticky;
+    top: 3.6rem;
+    align-self: start;
+    height: calc(100vh - 3.6rem);
+    overflow: auto;
+    font-size: 0.84rem;
+    color: var(--ink-2);
+  }
+  aside.nav .group { margin-bottom: 1rem; }
+  aside.nav .group-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-4);
+    font-weight: 600;
+    padding: 0.4rem 0.5rem;
+    margin-top: 0.6rem;
+  }
+  aside.nav ul { list-style: none; padding: 0; margin: 0; }
+  aside.nav li a {
+    display: block;
+    padding: 0.28rem 0.55rem;
+    border-radius: 4px;
+    text-decoration: none;
+    color: var(--ink-2);
+  }
+  aside.nav li a:hover { background: var(--bg-soft); color: var(--ink); }
+  aside.nav li a.active {
+    background: var(--bg-soft);
+    color: var(--ink);
+    font-weight: 500;
+    box-shadow: inset 2px 0 0 var(--accent);
+  }
+  aside.nav li.nested a { padding-left: 1.4rem; color: var(--ink-3); }
+
+  /* Article */
+  article {
+    padding: 2.8rem 3rem 6rem;
+    max-width: 46rem;
+  }
+  article .crumbs {
+    font-size: 0.78rem;
+    color: var(--ink-3);
+    margin-bottom: 1.2rem;
+  }
+  article .crumbs span { color: var(--ink-4); margin: 0 0.4rem; }
+  article h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 2.4rem;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.7rem;
+  }
+  article .lede {
+    font-family: var(--serif);
+    font-size: 1.15rem;
+    color: var(--ink-2);
+    line-height: 1.55;
+    margin: 0 0 1.6rem;
+    font-style: italic;
+    max-width: 36rem;
+  }
+  article .meta-row {
+    display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;
+    font-size: 0.78rem;
+    color: var(--ink-3);
+    padding-bottom: 1.4rem;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 2rem;
+  }
+  .pill {
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    background: var(--bg-soft);
+    color: var(--ink-2);
+    text-decoration: none;
+    border: 1px solid var(--rule);
+  }
+  .pill:hover { border-color: var(--rule-strong); color: var(--ink); }
+
+  article h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 1.35rem;
+    margin: 2.4rem 0 0.7rem;
+    letter-spacing: -0.01em;
+    scroll-margin-top: 5rem;
+  }
+  article h2 .anchor {
+    color: var(--ink-4);
+    text-decoration: none;
+    margin-left: 0.4rem;
+    font-family: var(--sans);
+    font-weight: 400;
+    font-size: 0.8em;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  article h2:hover .anchor { opacity: 1; }
+
+  article p {
+    font-family: var(--serif);
+    font-size: 1.06rem;
+    line-height: 1.7;
+    color: var(--ink);
+    margin: 0 0 1.1rem;
+  }
+  article a.wikilink {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule-strong);
+    padding-bottom: 1px;
+  }
+  article a.wikilink:hover { border-bottom-color: var(--accent); }
+
+  /* Callout */
+  .callout {
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 0.9rem 1.1rem;
+    margin: 1.6rem 0;
+    background: var(--bg-soft);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.8rem;
+  }
+  .callout .icon {
+    width: 1.4rem; height: 1.4rem;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; font-weight: 600;
+    margin-top: 0.15rem;
+  }
+  .callout .body { font-family: var(--serif); font-size: 1rem; color: var(--ink-2); line-height: 1.55; }
+  .callout .body .label {
+    font-family: var(--sans);
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+
+  /* Code */
+  pre, code { font-family: var(--mono); font-size: 0.86rem; }
+  pre {
+    background: var(--bg-soft);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 0.9rem 1.1rem;
+    overflow: auto;
+    line-height: 1.55;
+  }
+
+  /* Right TOC */
+  aside.toc {
+    padding: 2.8rem 1.4rem 4rem 1.6rem;
+    position: sticky;
+    top: 3.6rem;
+    align-self: start;
+    height: calc(100vh - 3.6rem);
+    overflow: auto;
+    font-size: 0.82rem;
+    color: var(--ink-3);
+  }
+  aside.toc h5 {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin: 0 0 0.6rem;
+    font-weight: 600;
+  }
+  aside.toc ul { list-style: none; margin: 0; padding: 0 0 1rem; border-bottom: 1px solid var(--rule); margin-bottom: 1.2rem; }
+  aside.toc li a { display: block; padding: 0.22rem 0; color: var(--ink-3); text-decoration: none; }
+  aside.toc li a.active { color: var(--accent); font-weight: 500; }
+  aside.toc li a:hover { color: var(--ink); }
+
+  .backlinks .item {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .backlinks .item:last-child { border-bottom: 0; }
+  .backlinks .title {
+    font-family: var(--serif);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--ink);
+    text-decoration: none;
+    display: block;
+    margin-bottom: 0.2rem;
+    line-height: 1.3;
+  }
+  .backlinks .excerpt {
+    font-family: var(--serif);
+    font-size: 0.85rem;
+    color: var(--ink-3);
+    line-height: 1.45;
+  }
+
+  .graph-thumb {
+    margin-top: 1.4rem;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    height: 9rem;
+    background:
+      radial-gradient(circle at 30% 40%, var(--accent) 2px, transparent 2.5px),
+      radial-gradient(circle at 60% 25%, #6B7280 1.5px, transparent 2px),
+      radial-gradient(circle at 75% 60%, #6B7280 1.5px, transparent 2px),
+      radial-gradient(circle at 40% 70%, #6B7280 1.5px, transparent 2px),
+      radial-gradient(circle at 20% 80%, #9AA0AB 1px, transparent 1.5px),
+      var(--bg-soft);
+    position: relative;
+    overflow: hidden;
+  }
+  .graph-thumb::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(45deg, transparent 49.7%, var(--rule-strong) 49.7%, var(--rule-strong) 50.3%, transparent 50.3%),
+      linear-gradient(-30deg, transparent 49.7%, var(--rule-strong) 49.7%, var(--rule-strong) 50.3%, transparent 50.3%);
+    background-size: 60% 60%, 70% 70%;
+    background-position: 30% 40%, 50% 50%;
+    background-repeat: no-repeat;
+    opacity: 0.4;
+  }
+  .graph-thumb .label {
+    position: absolute; bottom: 0.5rem; left: 0.7rem;
+    font-size: 0.7rem;
+    color: var(--ink-3);
+    font-family: var(--sans);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">atlas<span class="dot">.</span></div>
+  <div class="search">
+    <span>Search the wiki</span>
+    <span class="kbd">⌘ K</span>
+  </div>
+  <nav class="top-nav">
+    <a href="#">Index</a>
+    <a href="#">Tags</a>
+    <a href="#">Graph</a>
+  </nav>
+</header>
+
+<main>
+  <aside class="nav">
+    <div class="group">
+      <div class="group-title">On Reading</div>
+      <ul>
+        <li><a class="active" href="#">The Calculus of Boredom</a></li>
+        <li><a href="#">Marginalia, defended</a></li>
+        <li><a href="#">Why we underline</a></li>
+      </ul>
+    </div>
+    <div class="group">
+      <div class="group-title">On Working</div>
+      <ul>
+        <li><a href="#">Notes against productivity</a></li>
+        <li><a href="#">The shape of a good day</a></li>
+        <li><a href="#">Slow software</a></li>
+        <li class="nested"><a href="#">— see Bret Victor</a></li>
+      </ul>
+    </div>
+    <div class="group">
+      <div class="group-title">Reference</div>
+      <ul>
+        <li><a href="#">A field guide to attention</a></li>
+        <li><a href="#">On taking walks</a></li>
+        <li><a href="#">Csikszentmihalyi, M.</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <article>
+    <div class="crumbs">Atlas <span>/</span> On Reading <span>/</span> The Calculus of Boredom</div>
+    <h1>The Calculus of Boredom</h1>
+    <p class="lede">A short defense of the empty hour, and the strange productivity that lives inside of it.</p>
+    <div class="meta-row">
+      <a class="pill" href="#">#attention</a>
+      <a class="pill" href="#">#essays</a>
+      <a class="pill" href="#">#reading</a>
+      <span style="margin-left:0.6rem">Updated 09 May 2026 · 7 min</span>
+    </div>
+
+    <p>Boredom has acquired, in our era, the reputation of a small civic failure. To be bored at a dinner party is rude; to be bored at work is suspicious; to be bored on a Sunday afternoon, alone, with a book one has read before — this is, we are told, the entry-level form of a wasted life.</p>
+
+    <p>I want to argue the opposite. Boredom is not the absence of thought. It is the <a href="#" class="wikilink">slack capacity</a> that thought needs in order to occur — the same way a muscle requires rest, or a field a fallow year.</p>
+
+    <div class="callout">
+      <div class="icon">i</div>
+      <div class="body">
+        <span class="label">Note</span>
+        The cognitive scientist <a href="#" class="wikilink">Mihaly Csikszentmihalyi</a> distinguished between flow and apathy; he was less interested in the territory between them, where most thinking actually happens.
+      </div>
+    </div>
+
+    <h2>What attention is for <a class="anchor" href="#">#</a></h2>
+    <p>Consider the paradox: every productive person you can name guards their time savagely, and yet the most useful hours in their week are the ones in which they did, by their own account, "nothing." See: <a href="#" class="wikilink">Notes against productivity</a>.</p>
+
+    <p>The mathematics here are inverted. The output of an hour of focused work is roughly linear in the number of such hours. The output of an hour of <em>permitted boredom</em> — call it the integration of small, unprompted thoughts — compounds.</p>
+
+    <h2>A small experiment <a class="anchor" href="#">#</a></h2>
+    <p>For one week, schedule one fallow afternoon. No phone, no agenda, no project. Note what surfaces. (See <a href="#" class="wikilink">A field guide to attention</a> for the protocol.)</p>
+  </article>
+
+  <aside class="toc">
+    <h5>On this page</h5>
+    <ul>
+      <li><a href="#" class="active">What attention is for</a></li>
+      <li><a href="#">A small experiment</a></li>
+    </ul>
+
+    <h5>Linked from</h5>
+    <div class="backlinks">
+      <div class="item">
+        <a href="#" class="title">Notes against productivity</a>
+        <div class="excerpt">…closely related to the argument here, where unstructured time is treated as raw material…</div>
+      </div>
+      <div class="item">
+        <a href="#" class="title">A field guide to attention</a>
+        <div class="excerpt">…the fallow hour has a particular grammar, which I've described elsewhere…</div>
+      </div>
+      <div class="item">
+        <a href="#" class="title">On taking walks</a>
+        <div class="excerpt">…walking is the physical analog to the kind of attention I described in this essay…</div>
+      </div>
+    </div>
+
+    <div class="graph-thumb">
+      <span class="label">Local graph</span>
+    </div>
+  </aside>
+</main>
+
+</body>
+</html>

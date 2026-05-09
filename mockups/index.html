@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Obsidian HTML Wiki — Design Variations</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F4ED;
+    --ink: #1A1815;
+    --ink-2: #4A4640;
+    --ink-3: #8A8378;
+    --rule: #DCD6C8;
+    --accent: #6A1E1E;
+    --serif: "Newsreader", Georgia, serif;
+    --sans: "Inter", -apple-system, system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    border-bottom: 1px solid var(--rule);
+    padding: 3rem 2rem 2rem;
+    text-align: center;
+    max-width: 60rem;
+    margin: 0 auto;
+  }
+  header .eyebrow {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 2.6rem;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.6rem;
+  }
+  header h1 em { font-style: italic; color: var(--accent); }
+  header p {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--ink-2);
+    line-height: 1.55;
+    max-width: 32rem;
+    margin: 0 auto;
+  }
+
+  main {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+    gap: 1.4rem;
+    max-width: 78rem;
+    margin: 3rem auto;
+    padding: 0 2rem;
+  }
+  .card {
+    border: 1px solid var(--rule);
+    background: white;
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px -16px rgba(0,0,0,0.18);
+  }
+  .card iframe {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border: 0;
+    border-bottom: 1px solid var(--rule);
+    background: white;
+    pointer-events: none;
+  }
+  .card .body { padding: 1.2rem 1.3rem 1.4rem; }
+  .card .num {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .card h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 1.4rem;
+    margin: 0.4rem 0 0.5rem;
+    letter-spacing: -0.01em;
+  }
+  .card .desc {
+    font-family: var(--serif);
+    font-size: 0.95rem;
+    color: var(--ink-2);
+    line-height: 1.5;
+    margin: 0 0 0.9rem;
+  }
+  .card .palette { display: flex; gap: 0.4rem; margin-bottom: 1rem; }
+  .swatch {
+    width: 1.4rem; height: 1.4rem;
+    border-radius: 2px;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  .card a.open {
+    display: inline-block;
+    font-family: var(--sans);
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--ink);
+    text-decoration: none;
+    padding: 0.55rem 0.9rem;
+    border: 1px solid var(--ink);
+    border-radius: 2px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .card a.open:hover { background: var(--ink); color: white; }
+
+  footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.75rem;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+  }
+  footer .orn {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--accent);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 1.2rem;
+    margin-bottom: 0.4rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Obsidian HTML Wiki</div>
+  <h1>Three <em>variations</em> on a wiki</h1>
+  <p>Same content, same fonts (Newsreader + Inter), three different rooms. Click a card to open it full-page. Pick the one whose <em>spirit</em> feels right — we can tune palette and details after.</p>
+</header>
+
+<main>
+  <div class="card">
+    <iframe src="01-editorial-journal.html" title="Editorial Journal preview"></iframe>
+    <div class="body">
+      <div class="num">№ 01</div>
+      <h2>Editorial Journal</h2>
+      <p class="desc">A reading-first room. Cream paper, oxblood accent, sticky tree on the left, backlinks as marginal references on the right. Decorative dropcap on the lede; small ornament in the colophon. Feels like a serious blog you'd reread.</p>
+      <div class="palette">
+        <div class="swatch" style="background:#F7F4ED" title="paper"></div>
+        <div class="swatch" style="background:#1A1815" title="ink"></div>
+        <div class="swatch" style="background:#6A1E1E" title="oxblood"></div>
+        <div class="swatch" style="background:#DCD6C8" title="rule"></div>
+      </div>
+      <a class="open" href="01-editorial-journal.html" target="_blank">Open full page →</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <iframe src="02-quiet-reference.html" title="Quiet Reference preview"></iframe>
+    <div class="body">
+      <div class="num">№ 02</div>
+      <h2>Quiet Reference</h2>
+      <p class="desc">A docs-style three-column workspace. White ground, ink-blue accent, file tree + body + on-this-page TOC. Pills for tags, soft callouts, search bar with ⌘K. Best when the vault is reference-heavy and you'll skim.</p>
+      <div class="palette">
+        <div class="swatch" style="background:#FFFFFF" title="white"></div>
+        <div class="swatch" style="background:#0F1115" title="ink"></div>
+        <div class="swatch" style="background:#1C2A3A" title="ink-blue"></div>
+        <div class="swatch" style="background:#F7F7F5" title="rail"></div>
+      </div>
+      <a class="open" href="02-quiet-reference.html" target="_blank">Open full page →</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <iframe src="03-folio.html" title="Folio preview"></iframe>
+    <div class="body">
+      <div class="num">№ 03</div>
+      <h2>Folio</h2>
+      <p class="desc">A book/folio aesthetic. Slim icon rail, very large display headline (mixed roman + italic), oversized dropcap, sectioned by § numbers, archival moss accent. Endmatter block with numbered backlinks and a real local-graph SVG.</p>
+      <div class="palette">
+        <div class="swatch" style="background:#FBFAF7" title="paper"></div>
+        <div class="swatch" style="background:#14110C" title="ink"></div>
+        <div class="swatch" style="background:#2F4F3A" title="moss"></div>
+        <div class="swatch" style="background:#E5DFD2" title="rule"></div>
+      </div>
+      <a class="open" href="03-folio.html" target="_blank">Open full page →</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="orn">❦</div>
+  Pick one, mix-and-match, or send me back to the drawing board.
+</footer>
+
+</body>
+</html>
