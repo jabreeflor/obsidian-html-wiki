@@ -224,7 +224,14 @@ function buildRightAside(
 }
 
 function backlinkExcerpt(body: string, targetTitle: string): string {
-	const stripped = body.replace(/^#.*$/gm, "").replace(/\n+/g, " ").trim();
+	const stripped = body
+		.replace(/^---[\s\S]*?\n---\n/, "")
+		.replace(/^#.*$/gm, "")
+		.replace(/!\[\[[^\]]*\]\]/g, "")
+		.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_m, target, alias) => alias ?? target)
+		.replace(/`[^`]*`/g, "")
+		.replace(/\n+/g, " ")
+		.trim();
 	const idx = stripped.toLowerCase().indexOf(targetTitle.toLowerCase());
 	if (idx === -1) return stripped.slice(0, 140);
 	const start = Math.max(0, idx - 60);
