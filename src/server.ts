@@ -1,7 +1,7 @@
 import http from "node:http";
 import { VaultIndex } from "./vault-index";
 import { Renderer } from "./renderer";
-import { CLIENT_JS, KATEX_CSS, THEME_CSS } from "./theme/bundled";
+import { CLIENT_CHUNKS, KATEX_CSS, THEME_CSS } from "./theme/bundled";
 import {
 	homePage,
 	notePage,
@@ -20,8 +20,8 @@ export interface AttachmentSource {
 
 export interface AssetBundle {
 	"theme.css": string;
-	"client.js": string;
 	"katex.css": string;
+	clientChunks: Record<string, string>;
 }
 
 export interface ServerDeps {
@@ -221,17 +221,18 @@ export class HtmlWikiServer {
 
 	private async serveAsset(name: string, res: http.ServerResponse): Promise<void> {
 		const safe = name.replace(/\.\.+/g, "");
-		const map = this.deps.assets;
+		const assets = this.deps.assets;
 		if (safe === "theme.css") {
-			this.write(res, 200, TEXT_CSS, map["theme.css"]);
-			return;
-		}
-		if (safe === "client.js") {
-			this.write(res, 200, TEXT_JS, map["client.js"]);
+			this.write(res, 200, TEXT_CSS, assets["theme.css"]);
 			return;
 		}
 		if (safe === "katex.css") {
-			this.write(res, 200, TEXT_CSS, map["katex.css"]);
+			this.write(res, 200, TEXT_CSS, assets["katex.css"]);
+			return;
+		}
+		const chunk = assets.clientChunks[safe];
+		if (typeof chunk === "string") {
+			this.write(res, 200, TEXT_JS, chunk);
 			return;
 		}
 		this.write(res, 404, TEXT_HTML, "asset not found");
@@ -273,8 +274,8 @@ export class HtmlWikiServer {
 export function loadDefaultAssets(): AssetBundle {
 	return {
 		"theme.css": THEME_CSS,
-		"client.js": CLIENT_JS,
 		"katex.css": KATEX_CSS,
+		clientChunks: CLIENT_CHUNKS,
 	};
 }
 

@@ -5,12 +5,19 @@
   "main": "main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs",
+    "prebuild": "node scripts/ensure-client-bundle.mjs",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "pretest": "node scripts/ensure-client-bundle.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
+    "prelint": "node scripts/ensure-client-bundle.mjs",
     "lint": "tsc -noEmit -skipLibCheck"
   },
-  "keywords": ["obsidian", "wiki", "html"],
+  "keywords": [
+    "obsidian",
+    "wiki",
+    "html"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
@@ -32,6 +39,7 @@
     "markdown-it-anchor": "^9.2.0",
     "markdown-it-footnote": "^4.0.0",
     "markdown-it-task-lists": "^2.1.1",
+    "mermaid": "^11.14.0",
     "minisearch": "^7.1.1"
   }
 }

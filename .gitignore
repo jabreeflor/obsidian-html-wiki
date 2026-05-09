@@ -7,4 +7,6 @@ main.js.map
 .idea/
 coverage/
 dist/
+build/
+src/theme/client-bundle.json
 *.tsbuildinfo

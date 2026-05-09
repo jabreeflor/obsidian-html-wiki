@@ -46,7 +46,8 @@ describe("Quiet Reference theme", () => {
 		const html = homePage(site());
 		expect(html).toContain('href="/assets/theme.css"');
 		expect(html).toContain('href="/assets/katex.css"');
-		expect(html).toContain('src="/assets/client.js"');
+		expect(html).toContain('src="/assets/main.js"');
+		expect(html).toContain('type="module"');
 	});
 
 	it("top bar uses brand · search · nav columns with SVG icons (no emoji)", () => {

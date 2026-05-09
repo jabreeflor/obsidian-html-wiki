@@ -53,7 +53,7 @@ export function pageShell(opts: PageShellOpts): string {
 		main,
 		`<aside class="toc">${rightAside}</aside>`,
 		`</main>`,
-		`<script src="/assets/client.js" defer></script>`,
+		`<script type="module" src="/assets/main.js"></script>`,
 		`</body>`,
 		`</html>`,
 	].join("\n");

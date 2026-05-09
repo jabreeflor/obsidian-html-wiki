@@ -21,8 +21,12 @@ const attachmentBytes = new TextEncoder().encode("fake-image");
 
 const fakeAssets: AssetBundle = {
 	"theme.css": "/* theme placeholder */ body.theme-quiet-reference { color: #000 }",
-	"client.js": "/* client placeholder */",
 	"katex.css": "/* katex placeholder */",
+	clientChunks: {
+		"main.js": "/* client entry */",
+		"chunk-graph-abc.js": "/* graph chunk */",
+		"chunk-mermaid-xyz.js": "/* mermaid chunk */",
+	},
 };
 
 const fakeAttachments: AttachmentSource = {
@@ -139,10 +143,22 @@ describe("HtmlWikiServer", () => {
 		expect(r.body).toContain("theme-quiet-reference");
 	});
 
-	it("GET /assets/client.js returns JS", async () => {
-		const r = await get("/assets/client.js");
+	it("GET /assets/main.js returns the client entry chunk", async () => {
+		const r = await get("/assets/main.js");
 		expect(r.status).toBe(200);
 		expect(String(r.headers["content-type"])).toMatch(/javascript/);
+		expect(r.body).toContain("client entry");
+	});
+
+	it("GET /assets/<chunk> returns code-split client chunks", async () => {
+		const r = await get("/assets/chunk-graph-abc.js");
+		expect(r.status).toBe(200);
+		expect(String(r.headers["content-type"])).toMatch(/javascript/);
+	});
+
+	it("GET /assets/unknown returns 404", async () => {
+		const r = await get("/assets/no-such.js");
+		expect(r.status).toBe(404);
 	});
 
 	it("GET /attachments/diagram.png returns the file with image mime", async () => {
