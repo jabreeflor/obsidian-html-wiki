@@ -21,7 +21,7 @@ describe("VaultIndex", () => {
 	it("indexes all markdown files in the fixture", () => {
 		const idx = new VaultIndex(exclusion);
 		idx.build(raw);
-		expect(idx.totalCount()).toBe(8);
+		expect(idx.totalCount()).toBe(9);
 	});
 
 	it("flags notes with publish: false as excluded", () => {
@@ -31,7 +31,7 @@ describe("VaultIndex", () => {
 		expect(priv).toBeDefined();
 		expect(priv!.excluded).toBe(true);
 		expect(idx.excludedCount()).toBe(1);
-		expect(idx.count()).toBe(7);
+		expect(idx.count()).toBe(8);
 	});
 
 	it("computes slug from path with .md stripped and spaces normalized", () => {

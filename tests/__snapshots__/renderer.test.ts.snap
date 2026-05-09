@@ -1,0 +1,7 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Renderer > snapshot of On Reading/Marginalia.md render 1`] = `
+"<p>Notes are conversations with the page. Compare <a class="wikilink" href="/on-reading/boredom">the calculus of boredom</a> and <a class="wikilink" href="/on-reading/why-we-underline">Why we underline</a>.</p>
+<p>#reading</p>
+"
+`;
