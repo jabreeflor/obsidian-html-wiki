@@ -61,9 +61,113 @@ async function maybeInitMermaid(): Promise<void> {
 	}
 }
 
+function isLazyFolder(d: HTMLDetailsElement): boolean {
+	return !d.querySelector(":scope > .nav-folder-body") && !d.dataset.loaded;
+}
+
+async function loadFolderBody(d: HTMLDetailsElement): Promise<void> {
+	if (d.dataset.loaded) return;
+	const folder = d.dataset.folder;
+	if (folder === undefined) return;
+	d.dataset.loaded = "1";
+	try {
+		const url = `/api/nav/folder/${folder
+			.split("/")
+			.map(encodeURIComponent)
+			.join("/")}`;
+		const res = await fetch(url);
+		if (!res.ok) {
+			delete d.dataset.loaded;
+			return;
+		}
+		const html = await res.text();
+		d.insertAdjacentHTML("beforeend", html);
+		const newFolders = d.querySelectorAll<HTMLDetailsElement>(
+			":scope > .nav-folder-body details.nav-folder",
+		);
+		for (const sub of Array.from(newFolders)) wireLazyToggle(sub);
+	} catch {
+		delete d.dataset.loaded;
+	}
+}
+
+function wireLazyToggle(d: HTMLDetailsElement): void {
+	if (d.dataset.lazyWired === "1") return;
+	d.dataset.lazyWired = "1";
+	d.addEventListener("toggle", () => {
+		if (d.open && isLazyFolder(d)) void loadFolderBody(d);
+	});
+}
+
+function lazyNavFolders(nav: Element): void {
+	const folders = nav.querySelectorAll<HTMLDetailsElement>("details.nav-folder");
+	for (const d of Array.from(folders)) wireLazyToggle(d);
+}
+
+function navFilter(): void {
+	const input = document.getElementById("nav-filter") as HTMLInputElement | null;
+	if (!input) return;
+	const nav = input.closest("aside.nav");
+	if (!nav) return;
+	const originalOpen = new WeakMap<HTMLDetailsElement, boolean>();
+	const snapshot = (): void => {
+		const folders = nav.querySelectorAll<HTMLDetailsElement>("details.nav-folder");
+		for (const f of Array.from(folders)) {
+			if (!originalOpen.has(f)) originalOpen.set(f, f.open);
+		}
+	};
+	snapshot();
+
+	const applyClear = (): void => {
+		const items = nav.querySelectorAll<HTMLLIElement>("li");
+		for (const li of Array.from(items)) li.classList.remove("hidden");
+		const folders = nav.querySelectorAll<HTMLDetailsElement>("details.nav-folder");
+		for (const f of Array.from(folders)) {
+			f.classList.remove("hidden");
+			if (originalOpen.has(f)) f.open = originalOpen.get(f)!;
+		}
+	};
+
+	const applyFilter = async (q: string): Promise<void> => {
+		snapshot();
+		const lazy = Array.from(
+			nav.querySelectorAll<HTMLDetailsElement>("details.nav-folder"),
+		).filter(isLazyFolder);
+		if (lazy.length) await Promise.all(lazy.map(loadFolderBody));
+		const folders = nav.querySelectorAll<HTMLDetailsElement>("details.nav-folder");
+		for (const f of Array.from(folders)) f.open = true;
+		const items = nav.querySelectorAll<HTMLLIElement>("li");
+		for (const li of Array.from(items)) {
+			const a = li.querySelector("a");
+			const text = (a?.textContent ?? "").toLowerCase();
+			li.classList.toggle("hidden", !text.includes(q));
+		}
+		for (const f of Array.from(folders)) {
+			const visibleLi = f.querySelector<HTMLLIElement>("li:not(.hidden)");
+			f.classList.toggle("hidden", !visibleLi);
+		}
+	};
+
+	let token = 0;
+	input.addEventListener("input", () => {
+		const q = input.value.trim().toLowerCase();
+		const my = ++token;
+		if (!q) {
+			applyClear();
+			return;
+		}
+		void applyFilter(q).then(() => {
+			if (my !== token) return;
+		});
+	});
+}
+
 function boot(): void {
 	initSearch();
 	activeNavObserver();
+	const nav = document.querySelector("aside.nav");
+	if (nav) lazyNavFolders(nav);
+	navFilter();
 	void maybeInitGraph();
 	void maybeInitMermaid();
 }

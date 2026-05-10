@@ -187,7 +187,14 @@ export default class HtmlWikiPlugin extends Plugin {
 	}
 
 	private async boot(): Promise<void> {
-		await this.buildInitialIndex();
+		try {
+			await this.buildInitialIndex();
+		} catch (e) {
+			console.error("HTML Wiki: initial index build failed", e);
+			const msg = e instanceof Error ? e.message : String(e);
+			new Notice(`HTML Wiki: index build failed (${msg}). Server not started.`);
+			return;
+		}
 		if (!this.index) return;
 		const assets = loadDefaultAssets();
 		const attachments = this.makeAttachmentSource();
@@ -206,6 +213,7 @@ export default class HtmlWikiPlugin extends Plugin {
 			this.renderStatusBar(result);
 			new Notice(`HTML Wiki: serving at http://${result.host}:${result.port}/`);
 		} catch (e) {
+			console.error("HTML Wiki: server start failed", e);
 			this.currentAddress = null;
 			this.renderStatusBar(null);
 			const msg = e instanceof Error ? e.message : String(e);
@@ -217,11 +225,20 @@ export default class HtmlWikiPlugin extends Plugin {
 		if (!this.index) return;
 		const files = this.app.vault.getMarkdownFiles();
 		const raws: RawNote[] = [];
+		let skipped = 0;
 		for (const file of files) {
-			const content = await this.app.vault.cachedRead(file);
-			raws.push({ path: file.path, mtime: file.stat.mtime, content });
+			try {
+				const content = await this.app.vault.cachedRead(file);
+				raws.push({ path: file.path, mtime: file.stat.mtime, content });
+			} catch (e) {
+				skipped++;
+				console.warn(`HTML Wiki: failed to read ${file.path}`, e);
+			}
 		}
 		this.index.build(raws);
+		if (skipped > 0) {
+			new Notice(`HTML Wiki: indexed ${raws.length} notes, skipped ${skipped} unreadable.`);
+		}
 	}
 
 	private wireVaultEvents(): void {

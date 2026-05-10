@@ -180,10 +180,16 @@ export class VaultIndex {
 	}
 
 	private parse(raw: RawNote): PartialNote {
-		const parsed = matter(raw.content);
-		const frontmatter = (parsed.data ?? {}) as Record<string, unknown>;
-		const body = parsed.content;
-		const title = extractTitle(body, raw.path);
+		let frontmatter: Record<string, unknown> = {};
+		let body = raw.content;
+		try {
+			const parsed = matter(raw.content);
+			frontmatter = (parsed.data ?? {}) as Record<string, unknown>;
+			body = parsed.content;
+		} catch (e) {
+			console.warn(`HTML Wiki: frontmatter parse failed for ${raw.path}; treating as no frontmatter.`, e);
+		}
+		const title = extractTitle(body, raw.path, frontmatter);
 		const tags = extractTags(frontmatter, body);
 		const wlinks = parseWikilinks(body).map((w) => ({ target: w.target, embed: w.embed }));
 		const contentHash = createHash("sha1")
@@ -275,14 +281,45 @@ function directoryOf(path: string): string {
 	return idx === -1 ? "" : path.slice(0, idx);
 }
 
-function extractTitle(body: string, path: string): string {
+const TITLE_MAX = 200;
+
+function extractTitle(
+	body: string,
+	path: string,
+	frontmatter: Record<string, unknown>,
+): string {
+	const fmTitle = frontmatter["title"];
+	if (typeof fmTitle === "string" && fmTitle.trim()) {
+		return stripTitleFormatting(fmTitle).slice(0, TITLE_MAX);
+	}
 	const lines = body.split(/\r?\n/);
 	for (const line of lines) {
 		const m = /^#\s+(.+?)\s*$/.exec(line);
-		if (m) return m[1].trim();
+		if (!m) continue;
+		const cleaned = stripTitleFormatting(m[1]);
+		if (cleaned && cleaned.length <= TITLE_MAX) return cleaned;
+		// Heading was suspiciously long (likely a single-line note prefixed with "# ").
+		// Stop scanning and use the filename instead.
+		break;
 	}
 	const basename = path.split("/").pop() ?? path;
 	return basename.replace(/\.md$/i, "");
+}
+
+function stripTitleFormatting(s: string): string {
+	return s
+		.replace(/<\/?[a-zA-Z][^>]*>/g, "")
+		.replace(/`([^`]+)`/g, "$1")
+		.replace(/\*\*([^*]+)\*\*/g, "$1")
+		.replace(/__([^_]+)__/g, "$1")
+		.replace(/\*([^*]+)\*/g, "$1")
+		.replace(/_([^_]+)_/g, "$1")
+		.replace(/~~([^~]+)~~/g, "$1")
+		.replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+		.replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+		.replace(/[—–\-]{4,}/g, "")
+		.replace(/\s+/g, " ")
+		.trim();
 }
 
 function extractTags(frontmatter: Record<string, unknown>, body: string): string[] {

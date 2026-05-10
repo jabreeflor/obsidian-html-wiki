@@ -197,6 +197,9 @@ aside.nav li a {
 	border-radius: 4px;
 	text-decoration: none;
 	color: var(--ink-2);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 aside.nav li a:hover { background: var(--bg-soft); color: var(--ink); }
@@ -209,6 +212,94 @@ aside.nav li a.active {
 }
 
 aside.nav li.nested a { padding-left: 1.4rem; color: var(--ink-3); }
+
+/* ─── Filter input + recent + tree ───────────────────────────────── */
+
+aside.nav .nav-filter {
+	width: 100%;
+	border: 1px solid var(--rule);
+	border-radius: 6px;
+	padding: 0.35rem 0.6rem;
+	font-family: var(--sans);
+	font-size: 0.8rem;
+	color: var(--ink);
+	background: var(--bg-soft);
+	margin-bottom: 0.8rem;
+	outline: none;
+}
+
+aside.nav .nav-filter::placeholder { color: var(--ink-4); }
+
+aside.nav .nav-filter:focus {
+	border-color: var(--rule-strong);
+	background: var(--bg);
+}
+
+aside.nav .nav-recent {
+	margin-bottom: 0.4rem;
+}
+
+aside.nav .nav-divider {
+	border: 0;
+	border-top: 1px solid var(--rule);
+	margin: 0.6rem 0 0.8rem;
+}
+
+aside.nav .nav-tree { font-size: inherit; }
+
+aside.nav details.nav-folder { margin: 0; }
+
+aside.nav details.nav-folder > summary {
+	list-style: none;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.28rem 0.55rem;
+	border-radius: 4px;
+	color: var(--ink-2);
+	font-weight: 500;
+	user-select: none;
+}
+
+aside.nav details.nav-folder > summary::-webkit-details-marker { display: none; }
+aside.nav details.nav-folder > summary::marker { content: ""; }
+
+aside.nav details.nav-folder > summary:hover {
+	background: var(--bg-soft);
+	color: var(--ink);
+}
+
+aside.nav details.nav-folder > summary .folder-icon {
+	color: var(--ink-4);
+	flex-shrink: 0;
+	transition: transform 0.12s;
+}
+
+aside.nav details.nav-folder[open] > summary .folder-icon {
+	transform: rotate(90deg);
+}
+
+aside.nav details.nav-folder > summary .folder-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+aside.nav .nav-folder-body {
+	padding-left: 0.85rem;
+	border-left: 1px solid var(--rule);
+	margin-left: 0.7rem;
+}
+
+aside.nav li.more a {
+	color: var(--ink-3);
+	font-style: italic;
+	font-size: 0.8rem;
+}
+
+aside.nav li.hidden { display: none; }
+aside.nav details.nav-folder.hidden { display: none; }
 
 /* ─── Article ─────────────────────────────────────────────────────── */
 
@@ -794,6 +885,55 @@ aside.toc li a:hover { color: var(--ink); }
 	color: var(--ink-4);
 	font-family: var(--sans);
 	font-size: 0.78rem;
+}
+
+/* ─── Folder index page ─────────────────────────────────────────── */
+
+.folder-page h1 {
+	font-family: var(--serif);
+}
+
+.folder-page .folder-list,
+.folder-page .folder-note-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	font-family: var(--serif);
+	font-size: 1.04rem;
+}
+
+.folder-page .folder-list li,
+.folder-page .folder-note-list li {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 1rem;
+	padding: 0.45rem 0;
+	border-bottom: 1px solid var(--rule);
+}
+
+.folder-page .folder-list li:last-child,
+.folder-page .folder-note-list li:last-child { border-bottom: 0; }
+
+.folder-page .folder-list .muted,
+.folder-page .folder-note-list .muted {
+	color: var(--ink-4);
+	font-family: var(--sans);
+	font-size: 0.78rem;
+	white-space: nowrap;
+}
+
+.folder-page section { margin: 1.6rem 0; }
+
+.folder-page section h2 {
+	font-family: var(--serif);
+	font-size: 1.1rem;
+	font-weight: 500;
+	color: var(--ink-2);
+	letter-spacing: -0.005em;
+	margin: 1.4rem 0 0.6rem;
+	border-bottom: 1px solid var(--rule);
+	padding-bottom: 0.3rem;
 }
 
 /* ─── Search & graph & 404 pages ──────────────────────────────────── */

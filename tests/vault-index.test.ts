@@ -50,6 +50,39 @@ describe("VaultIndex", () => {
 		expect(idx.get("Reference/Csikszentmihalyi.md")!.title).toBe("Csikszentmihalyi, M.");
 	});
 
+	it("falls back to filename when the H1 is suspiciously long (Apple-Notes-style single-line bodies)", () => {
+		const idx = new VaultIndex(exclusion);
+		const longBody = "# " + "🔥 GitHub Trending Skills — 2026-04-09 ".repeat(20);
+		idx.build([
+			{ path: "Apple Notes/GitHub Trending.md", mtime: 1, content: longBody },
+		]);
+		expect(idx.get("Apple Notes/GitHub Trending.md")!.title).toBe("GitHub Trending");
+	});
+
+	it("strips markdown formatting from the H1 (bold, italics, HTML, em-dash runs)", () => {
+		const idx = new VaultIndex(exclusion);
+		idx.build([
+			{ path: "a.md", mtime: 1, content: "# **Bankara** Akihabara" },
+			{ path: "b.md", mtime: 1, content: "# <b><u>Parents — 250</u></b>" },
+			{ path: "c.md", mtime: 1, content: "# ——————————————" },
+		]);
+		expect(idx.get("a.md")!.title).toBe("Bankara Akihabara");
+		expect(idx.get("b.md")!.title).toBe("Parents — 250");
+		expect(idx.get("c.md")!.title).toBe("c");
+	});
+
+	it("prefers frontmatter title when present", () => {
+		const idx = new VaultIndex(exclusion);
+		idx.build([
+			{
+				path: "ny/note.md",
+				mtime: 1,
+				content: "---\ntitle: My Custom Title\n---\n# Different H1",
+			},
+		]);
+		expect(idx.get("ny/note.md")!.title).toBe("My Custom Title");
+	});
+
 	it("resolves wikilinks across folders, with aliases and headings", () => {
 		const idx = new VaultIndex(exclusion);
 		idx.build(raw);

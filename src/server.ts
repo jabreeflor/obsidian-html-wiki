@@ -10,6 +10,8 @@ import {
 	graphPage,
 	searchPage,
 	notFoundPage,
+	renderNavFolderBody,
+	folderIndexPage,
 	SiteContext,
 } from "./theme/templates";
 import { buildSearchPayload } from "./search-index";
@@ -200,6 +202,30 @@ export class HtmlWikiServer {
 		}
 		if (pathname === "/api/graph.json") {
 			this.write(res, 200, APP_JSON, JSON.stringify(site.index.graphData()));
+			return;
+		}
+		if (pathname.startsWith("/api/nav/folder/")) {
+			const folder = pathname.slice("/api/nav/folder/".length).replace(/\/$/, "");
+			const html = renderNavFolderBody(site.index, folder);
+			if (html === null) {
+				this.write(res, 404, TEXT_HTML, "folder not found");
+				return;
+			}
+			this.write(res, 200, TEXT_HTML, html);
+			return;
+		}
+		if (pathname.startsWith("/folder/")) {
+			const folder = pathname.slice("/folder/".length).replace(/\/$/, "");
+			if (!folder) {
+				this.write(res, 404, TEXT_HTML, notFoundPage(site, pathname));
+				return;
+			}
+			const html = folderIndexPage(site, folder);
+			if (html === null) {
+				this.write(res, 404, TEXT_HTML, notFoundPage(site, pathname));
+				return;
+			}
+			this.write(res, 200, TEXT_HTML, html);
 			return;
 		}
 		if (pathname.startsWith("/assets/")) {

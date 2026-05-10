@@ -136,6 +136,47 @@ describe("HtmlWikiServer", () => {
 		expect(ids).not.toContain("Drafts/Private rant.md");
 	});
 
+	it("GET /api/nav/folder/<path> returns just that folder's children", async () => {
+		const r = await get("/api/nav/folder/On%20Reading");
+		expect(r.status).toBe(200);
+		expect(String(r.headers["content-type"])).toMatch(/text\/html/);
+		expect(r.body).toContain('href="/on-reading/');
+		// Recent / filter chrome must not be repeated in the partial
+		expect(r.body).not.toContain('id="nav-filter"');
+		expect(r.body).not.toContain('class="nav-recent"');
+	});
+
+	it("GET /api/nav/folder/<bad> returns 404", async () => {
+		const r = await get("/api/nav/folder/Nope");
+		expect(r.status).toBe(404);
+	});
+
+	it("GET /folder/<path> renders a themed folder index", async () => {
+		const r = await get("/folder/On%20Reading");
+		expect(r.status).toBe(200);
+		expect(String(r.headers["content-type"])).toMatch(/text\/html/);
+		expect(r.body).toContain('class="theme-quiet-reference page-folder');
+		expect(r.body).toContain("On Reading/");
+		expect(r.body).toContain("The Calculus of Boredom");
+		expect(r.body).toContain("Marginalia");
+	});
+
+	it("GET /folder/<bad> returns 404", async () => {
+		const r = await get("/folder/Nope");
+		expect(r.status).toBe(404);
+		expect(r.body).toContain("Not found");
+	});
+
+	it("GET /folder/ (empty) returns 404", async () => {
+		const r = await get("/folder/");
+		expect(r.status).toBe(404);
+	});
+
+	it("GET /folder/<path> excludes hidden notes", async () => {
+		const r = await get("/folder/Drafts");
+		expect(r.status).toBe(404);
+	});
+
 	it("GET /assets/theme.css returns CSS", async () => {
 		const r = await get("/assets/theme.css");
 		expect(r.status).toBe(200);

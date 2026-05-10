@@ -11,7 +11,10 @@ import {
 	graphPage,
 	searchPage,
 	notFoundPage,
+	buildLeftNav,
+	renderNavFolderBody,
 } from "../src/theme/templates";
+import type { RawNote } from "../src/vault-index";
 import { THEME_CSS } from "../src/theme/bundled";
 import { loadVault } from "./helpers/load-vault";
 
@@ -123,5 +126,175 @@ describe("Quiet Reference theme", () => {
 		const html = homePage(site());
 		expect(html).toContain("Recent notes");
 		expect(html).toContain("class=\"tagcloud-list\"");
+	});
+});
+
+function makeRaw(p: string, mtime: number, opts?: { exclude?: boolean; title?: string }): RawNote {
+	const fm: string[] = [];
+	if (opts?.exclude) fm.push("publish: false");
+	if (opts?.title) fm.push(`title: ${opts.title}`);
+	const frontmatter = fm.length ? `---\n${fm.join("\n")}\n---\n` : "";
+	const heading = opts?.title ?? p.split("/").pop()!.replace(/\.md$/, "");
+	const body = `${frontmatter}# ${heading}\n\nbody`;
+	return { path: p, mtime, content: body };
+}
+
+describe("buildLeftNav (hierarchical)", () => {
+	it("renders nested folders along the open chain", () => {
+		const idx = new VaultIndex(exclusion);
+		idx.build([
+			makeRaw("Reference/Frameworks/React.md", 100),
+			makeRaw("Reference/Frameworks/Vue.md", 200),
+			makeRaw("Reference/Languages/Go.md", 300),
+		]);
+		const html = buildLeftNav(idx, "Reference/Frameworks/React.md");
+		expect(html).toContain('data-folder="Reference"');
+		expect(html).toContain('data-folder="Reference/Frameworks"');
+		// sibling subfolder is a closed stub but still rendered as a <details>
+		expect(html).toContain('data-folder="Reference/Languages"');
+		expect(html).toContain(">React<");
+		expect(html).toContain(">Vue<");
+	});
+
+	it("ships closed folders as stubs without a body div (lazy-load)", () => {
+		const idx = new VaultIndex(exclusion);
+		idx.build([
+			makeRaw("Closed/Inside.md", 100, { title: "Inside" }),
+			makeRaw("Other/Marker.md", 200, { title: "Marker" }),
+		]);
+		const html = buildLeftNav(idx, "Other/Marker.md");
+		const closedMatch = /<details[^>]*data-folder="Closed"[^>]*>([\s\S]*?)<\/details>/.exec(html);
+		expect(closedMatch).not.toBeNull();
+		expect(closedMatch![1]).not.toContain("nav-folder-body");
+		expect(closedMatch![1]).not.toContain("Inside");
+		expect(html).toContain('data-count="1"');
+	});
+
+	it("emits a single shared <symbol> for the folder chevron (not inline per folder)", () => {
+		const idx = new VaultIndex(exclusion);
+		const raws: RawNote[] = [];
+		for (let i = 0; i < 10; i++) raws.push(makeRaw(`F${i}/N.md`, 100 + i));
+		idx.build(raws);
+		const html = buildLeftNav(idx);
+		const symbolCount = (html.match(/<symbol id="nav-folder-chevron"/g) ?? []).length;
+		expect(symbolCount).toBe(1);
+		expect(html).toContain('<use href="#nav-folder-chevron"');
+		expect(html).not.toContain('<path d="M3 2 L7 5 L3 8"/></svg><span class="folder-name"');
+	});
+
+	it("opens the chain of folders containing the current note and collapses siblings", () => {
+		const idx = new VaultIndex(exclusion);
+		idx.build([
+			makeRaw("Reference/Frameworks/React.md", 100),
+			makeRaw("Reference/Languages/Go.md", 200),
+			makeRaw("Drafts/Idea.md", 300),
+		]);
+		const html = buildLeftNav(idx, "Reference/Frameworks/React.md");
+		expect(html).toMatch(/<details[^>]*open[^>]*data-folder="Reference"/);
+		expect(html).toMatch(/<details[^>]*open[^>]*data-folder="Reference\/Frameworks"/);
+		expect(html).toMatch(/<details(?![^>]*open)[^>]*data-folder="Reference\/Languages"/);
+		expect(html).toMatch(/<details(?![^>]*open)[^>]*data-folder="Drafts"/);
+	});
+
+	it("truncates folders with more than 40 notes to 20 plus a 'more' link", () => {
+		const idx = new VaultIndex(exclusion);
+		const raws: RawNote[] = [];
+		for (let i = 0; i < 45; i++) {
+			const num = String(i).padStart(2, "0");
+			raws.push(makeRaw(`Big/Note ${num}.md`, 100 + i));
+		}
+		idx.build(raws);
+		const html = buildLeftNav(idx, "Big/Note 00.md");
+		const folderMatch = /<details[^>]*data-folder="Big"[^>]*>([\s\S]*?)<\/details>/.exec(html);
+		expect(folderMatch).not.toBeNull();
+		const folderHtml = folderMatch![1];
+		const liCount = (folderHtml.match(/<li>/g) ?? []).length;
+		expect(liCount).toBe(20);
+		expect(folderHtml).toContain('class="more"');
+		expect(folderHtml).toContain("+ 25 more in Big");
+		expect(folderHtml).toContain('href="/folder/Big"');
+	});
+
+	it("does not truncate folders with 40 or fewer notes", () => {
+		const idx = new VaultIndex(exclusion);
+		const raws: RawNote[] = [];
+		for (let i = 0; i < 40; i++) {
+			raws.push(makeRaw(`Edge/Note ${i}.md`, 100 + i));
+		}
+		idx.build(raws);
+		const html = buildLeftNav(idx, "Edge/Note 0.md");
+		const folderMatch = /<details[^>]*data-folder="Edge"[^>]*>([\s\S]*?)<\/details>/.exec(html);
+		expect(folderMatch).not.toBeNull();
+		expect(folderMatch![1]).not.toContain('class="more"');
+	});
+
+	it("renders a Recent section with up to 10 most-recent visible notes", () => {
+		const idx = new VaultIndex(exclusion);
+		const raws: RawNote[] = [];
+		for (let i = 0; i < 15; i++) {
+			raws.push(makeRaw(`F/N${i}.md`, 1000 + i, { title: `Title ${i}` }));
+		}
+		idx.build(raws);
+		const html = buildLeftNav(idx);
+		const recentMatch = /<div class="nav-recent">([\s\S]*?)<\/ul>\s*<\/div>/.exec(html);
+		expect(recentMatch).not.toBeNull();
+		const recentHtml = recentMatch![1];
+		const liCount = (recentHtml.match(/<li/g) ?? []).length;
+		expect(liCount).toBe(10);
+		expect(recentHtml).toContain("Title 14");
+		expect(recentHtml).toContain("Title 5");
+		expect(recentHtml).not.toContain("Title 4");
+	});
+
+	it("excludes notes flagged via exclusion frontmatter from both Recent and tree", () => {
+		const idx = new VaultIndex(exclusion);
+		idx.build([
+			makeRaw("Public/Visible.md", 100, { title: "Visible Note" }),
+			makeRaw("Private/Hidden.md", 200, { title: "Hidden Note", exclude: true }),
+		]);
+		const html = buildLeftNav(idx);
+		expect(html).toContain("Visible Note");
+		expect(html).not.toContain("Hidden Note");
+		expect(html).not.toContain('data-folder="Private"');
+	});
+
+	it("includes the filter input and Recent / tree containers", () => {
+		const idx = new VaultIndex(exclusion);
+		idx.build([makeRaw("F/N.md", 100)]);
+		const html = buildLeftNav(idx);
+		expect(html).toContain('id="nav-filter"');
+		expect(html).toContain('class="nav-filter"');
+		expect(html).toContain('class="nav-recent"');
+		expect(html).toContain('class="nav-tree"');
+		expect(html).toContain('<hr class="nav-divider">');
+	});
+
+	it("preserves white-space:nowrap + ellipsis truncation on nav links", () => {
+		expect(THEME_CSS).toMatch(/aside\.nav li a\s*\{[\s\S]*white-space:\s*nowrap[\s\S]*text-overflow:\s*ellipsis/);
+	});
+});
+
+describe("renderNavFolderBody (lazy-load endpoint)", () => {
+	it("returns the children of a folder with subfolders rendered as fully-stubbed details", () => {
+		const idx = new VaultIndex(exclusion);
+		idx.build([
+			makeRaw("Reference/Frameworks/React.md", 100),
+			makeRaw("Reference/Languages/Go.md", 200),
+			makeRaw("Reference/note.md", 300, { title: "Top" }),
+		]);
+		const html = renderNavFolderBody(idx, "Reference");
+		expect(html).not.toBeNull();
+		// Reference body should include both subfolder stubs and a UL of leaf notes
+		expect(html).toContain('data-folder="Reference/Frameworks"');
+		expect(html).toContain('data-folder="Reference/Languages"');
+		expect(html).toContain(">Top<");
+		// Stubs do NOT include their grand-children
+		expect(html).not.toContain(">React<");
+	});
+
+	it("returns null for unknown folders", () => {
+		const idx = new VaultIndex(exclusion);
+		idx.build([makeRaw("F/N.md", 100)]);
+		expect(renderNavFolderBody(idx, "Bogus")).toBeNull();
 	});
 });
