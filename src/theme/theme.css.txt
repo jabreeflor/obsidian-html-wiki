@@ -1027,6 +1027,44 @@ aside.toc li a:hover { color: var(--ink); }
 	stroke-opacity: 0.8;
 }
 
+.page-graph #graph-root svg:focus { outline: none; }
+
+.page-graph .graph-controls {
+	position: absolute;
+	right: 12px;
+	bottom: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	z-index: 2;
+}
+
+.page-graph .graph-ctrl {
+	width: 30px;
+	height: 30px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font: 600 16px/1 var(--sans);
+	color: var(--ink-2);
+	background: var(--bg);
+	border: 1px solid var(--rule);
+	border-radius: 6px;
+	cursor: pointer;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+	user-select: none;
+	padding: 0;
+}
+
+.page-graph .graph-ctrl:hover {
+	background: var(--bg-soft);
+	color: var(--ink-1);
+}
+
+.page-graph .graph-ctrl:active {
+	transform: translateY(1px);
+}
+
 .page-404 article {
 	color: var(--ink-2);
 }

@@ -611,7 +611,7 @@ export function graphPage(site: SiteContext): string {
 		`<article class="graph-page">`,
 		`<div class="crumbs"><a href="/">${esc(site.vaultName)}</a> <span>/</span> <span>Graph</span></div>`,
 		`<h1>Graph</h1>`,
-		`<p class="lede">A force-directed view of the vault's wikilinks.</p>`,
+		`<p class="lede">A force-directed view of the vault's wikilinks. Scroll or pinch to zoom, drag to pan, drag a node to pin it.</p>`,
 		`<div id="graph-root" data-src="/api/graph.json"></div>`,
 		`</article>`,
 	].join("");
